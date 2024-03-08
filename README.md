@@ -39,3 +39,4 @@ echo $(htpasswd -nb $TRAEFIK_EMAIL $TRAEFIK_PASS) | sed -e s/\\$/\\$\\$/g
 ```shell
 docker stack deploy --prune --resolve-image always -c traefik.yaml traefik
 ```
+- Acesse o Dashboard do **traefik** **`https://traefik.seudominio.com.br`**
