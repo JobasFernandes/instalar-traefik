@@ -18,7 +18,7 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge=true"
       - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.letsencryptresolver.acme.email=${TRAEFIK_EMAIL}"
+      - "--certificatesresolvers.letsencryptresolver.acme.email=${TRAEFIK_EMAIL}" # ALTERE AQUI
       - "--certificatesresolvers.letsencryptresolver.acme.storage=/etc/traefik/letsencrypt/acme.json"
       - "--log.level=INFO"
       - "--log.format=common"
@@ -43,7 +43,7 @@ services:
           - node.role == manager
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_URL}`)"
+        - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_URL}`)" # ALTERE AQUI
         - "traefik.http.routers.dashboard.service=api@internal"
         - "traefik.http.routers.dashboard.entrypoints=websecure"
         - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
@@ -51,7 +51,7 @@ services:
         - "traefik.http.routers.dashboard.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
         - "traefik.http.routers.dashboard.middlewares=authtraefik"
-        - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_CREDS}"
+        - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_CREDS}" # ALTERE AQUI
         - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
         - "traefik.http.middlewares.redirect-https.redirectscheme.permanent=true"
         - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
