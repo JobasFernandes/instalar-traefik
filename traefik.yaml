@@ -1,0 +1,80 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v2.10.5
+    hostname: "{{.Node.Hostname}}"
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker.swarmMode=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencryptresolver.acme.email=${TRAEFIK_EMAIL}"
+      - "--certificatesresolvers.letsencryptresolver.acme.storage=/etc/traefik/letsencrypt/acme.json"
+      - "--log.level=INFO"
+      - "--log.format=common"
+      - "--log.filePath=/var/log/traefik/traefik.log"
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access-log"
+      - "--ping=true"
+      - "--ping.entrypoint=ping"
+      - "--entryPoints.ping.address=:8082"
+      - "--metrics.prometheus=true"
+      - "--global.checkNewVersion=true"
+      - "--global.sendAnonymousUsage=false"
+    healthcheck:
+      test: ["CMD", "wget", "http://localhost:8082/ping", "--spider"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.dashboard.rule=Host(`${TRAEFIK_URL}`)"
+        - "traefik.http.routers.dashboard.service=api@internal"
+        - "traefik.http.routers.dashboard.entrypoints=websecure"
+        - "traefik.http.services.dashboard.loadbalancer.server.port=8080"
+        - "traefik.http.routers.dashboard.tls=true"
+        - "traefik.http.routers.dashboard.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.dashboard.loadbalancer.passhostheader=true"
+        - "traefik.http.routers.dashboard.middlewares=authtraefik"
+        - "traefik.http.middlewares.authtraefik.basicauth.users=${TRAEFIK_CREDS}"
+        - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.redirect-https.redirectscheme.permanent=true"
+        - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+        - "traefik.http.routers.http-catchall.entrypoints=web"
+        - "traefik.http.routers.http-catchall.middlewares=redirect-https@docker"
+        - "traefik.http.routers.http-catchall.priority=1"
+
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "vol_certificates:/etc/traefik/letsencrypt"
+    ports:
+      - 80:80
+      - 443:443/udp
+      - 443:443/tcp
+    networks:
+      - proxy
+
+volumes:
+  vol_certificates:
+    external: true
+    name: volume_swarm_certificates
+
+networks:
+  proxy:
+    external: true
+    name: proxy
