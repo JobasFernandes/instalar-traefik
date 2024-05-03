@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   traefik:
-    image: traefik:v2.10.5
+    image: traefik:v2.11.2
     hostname: "{{.Node.Hostname}}"
     command:
       - "--api.dashboard=true"
