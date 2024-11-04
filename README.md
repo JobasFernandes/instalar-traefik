@@ -2,12 +2,12 @@
 
 ### PRÉ-REQUISITOS
 
-1. VPS Ubuntu **20.04** +
+1. VPS Ubuntu **20.04** (minimo)
 2. Instale o **Docker** e o **Docker Compose**
 ```shell
 bash <(wget -qO- https://raw.githubusercontent.com/JobasFernandes/instalar-traefik-swarm/main/install.sh)
 ```
-3. Instalar o **Apache2-Utils** _(Comando abaixo)_
+3. Instalar o **Apache2-Utils**
 ```shell
 sudo apt install apache2-utils -y
 ```
